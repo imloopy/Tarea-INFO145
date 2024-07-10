@@ -1,0 +1,68 @@
+
+// Función para generar un arreglo ordenado de tamaño n con 
+// aumento máximo e
+generar_arreglo_lineal(n, e) {
+	// Complejidad asintotica O(n)
+	Sea L[0 .. n-1] un arreglo de enteros de tamaño n
+	L[0] = random() % e
+	for i = 1 to n-1 do
+		L[i] = L[i-1] + random() % e
+	return L
+}
+
+
+// Función para generar un arreglo dinámico con distribución 
+// normal de tamaño n, aumento máximo e, media m y desviación 
+// estándar s.
+generar_arreglo_normal(n, m, s) {
+	// Complejidad asintotica O(n)
+	Sea N[0 .. n-1] un arreglo de enteros de tamaño n
+	
+	// Para que tanto el arreglo Lineal como el Normal
+	// tengan valores dentro del mismo intervalo se propone:
+	// En el caso que la función rand()% e para generar el
+	// arreglo lineal siempre genere el valor máximo posible,
+	// es decir (e-1) este será sumado al valor anterior n
+	// veces, por lo que el mayor valor teórico será n*(e-1).
+	// Entonces para generar valores desde 0 (posible inicio)
+	// del arreglo lineal y n*(e-1), se usa una distribución
+	// normal de media 0, puediendo generar un máximo n*(e-1)/2 
+	// positivo y n*(e-1)/2 negativo. Luego, se suma el primer
+	// valor del arreglo en valor absoluto a todo el arreglo,
+	// desplazando la distribución normal iniciando en 0 y con
+	// un máximo posible de n*(e-1).
+	
+	for i = 0 to n-1 do
+		N[i] = valor_normal(m, s) % ((n * (e-1) + 1)/2);
+		
+	N.sort()
+	
+	if (N[0] < 0)
+		min = valor_absoluto(N[0])
+		for i = 0 to n-1 do
+			N[i] += min
+	
+	return N
+}
+
+
+// Implementación de búsqueda binaria no recursiva sobre un 
+// arreglo ordenado A de tamaño n y valor a buscar val.
+busqueda_binaria(A, n, val) {	
+	// Complejidad asintotica O(log(n))
+	izq = 0
+	der = n-1
+
+	while izq <= der do
+		med =  izq + (der - izq) / 2
+		
+		if A[med] == val
+			return med	// Se encontró el valor
+		if A[med] < val
+			izq = med + 1
+		else
+			der = med - 1
+		
+	return -1 // No se encontró el valor
+}
+

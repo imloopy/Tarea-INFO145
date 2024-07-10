@@ -1,0 +1,157 @@
+// A partir de un arreglo X de tamaño n identifica los valores
+// únicos contenidos, su probabilidad y asigna un campo de 
+// código que inicia en 0b00000000. Luego, estos elementos son
+// ordenados por probabilidad.
+conseguir_valores(X, n) {
+ 	// Complejidad asintótica O(n) + O(n log(n)) -> O(n log(n))
+	Sea C un diccionario que almacena valores en la forma
+	{simbolo, probabilidad, codigo}
+	
+	for i = 0 to n-1
+		if C.find(X[i])
+			C[X[i]].probabilidad += 1/n
+		else
+			C[X[i]] = {X[i], 1/n, 0b00000000}
+	
+	quicksort(C, 0, n-1)
+	
+	return C
+}
+
+// Intercambia de posición el elemento a con el elemento b
+swap(a, b) {
+ 	// Complejidad asintótica O(c)
+    temp = a
+    a = b
+    b = temp
+}
+
+particion_probabilidad(X, low, high) {	
+ 	// Complejidad asintótica O(n)
+    p = X[high].probabilidad
+    i = low - 1
+
+    for j = low to high-1
+        if X[j].probabilidad > p
+            i += 1
+            swap(X[i], X[j]) // O(c)
+            
+    swap(X[i + 1], X[high]) // O(c)
+    return i + 1
+}
+
+quicksort(X, low, high) {
+ 	// Complejidad asintótica O(n log(n))
+    if (low < high)
+        pi = particion_probabilidad(X, low, high)
+
+        quicksort(X, low, pi - 1)
+        quicksort(X, pi + 1, high)
+}
+
+codificarSF(C, a, b, probTotal, pot) {
+ 	// Complejidad asintótica O(n log(n))
+	// Precondition: C es un diccionario donde sus datos son
+	// de la forma: {simbolo, probabilidad, codigo}
+	// ordenados de mayor a menor según sus valores de
+	// probabilidad. a es el índice de inicio del conjunto
+	// y b es el índice final del conjunto. probTotal es la
+    // suma de todas las probabilidades de los objetos en el
+    // conjunto. pot es la posición (de derecha a izquierda)
+    // que se está alterando en el código de los datos.
+
+	// Postcondition: Cada elemento tendrá en su campo 
+	// de código su codificación correspondiente 
+	// utilizando el método de Shannon-Fano.
+	
+    if a >= b return;
+
+	p, probActual = divisorProbabilidad(C, a, b, probTotal);
+	
+	for i = a to p
+		C[i].codigo += pow(2,pot)
+		 
+	if (b-a > 1) then
+		if (p-a > 0) then Shannon-Fano(C, a, p, probActual, pot+1);
+		if (b-(p+1) > 0) then Shannon-Fano(C, p+1, b, probTotal - probActual, pot+1);
+}
+
+divisorProbabilidad(C, a, b, probTotal) {
+ 	// Complejidad asintótica O(n)
+    // Precondition: C es un conjunto con objetos
+    // (cada uno con los campos: probabilidad y codigo)
+    // ordenados de mayor a menor según sus valores
+    // de probabilidad. a es el índice de inicio del conjunto
+    // y b es el índice final del conjunto. probTotal es la
+    // suma de todas las probabilidades de los objetos en el
+    // conjunto.
+
+    // Postcondition: Si el conjunto tiene dos elementos,
+	// se retorna el índice de inicio 'a'. De otro modo se
+	// retorna el índice p que divide el conjunto en dos 
+	// subconjuntos con la menor diferencia entre la suma de
+	// las probabilidades de sus objetos.
+
+	if (b-a == 1) then return (a, C[a].probabilidad);
+	
+	probActual = C[a].probabilidad
+	probMedia = probTotal / 2
+	diferencia = |probMedia - probActual|
+	indice = a
+
+	for i = a+1 to b:
+		if |probActual + C[i].probabilidad - probMedia| <= diferencia then
+			probActual += C[i].probabilidad
+			diferencia = |probActual - probMedia|
+		else
+			indice = i-1
+			break;
+			
+	return (indice, probActual)
+}
+
+// Genera un Diccionario Shannon Fano (DSF) que toma
+// los elementos desde el índice a hasta n-1 de C para 
+// generar un diccionario para decodificarlo.
+generar_DSF(C, a, n) {
+ 	// Complejidad asintótica O(n)
+	// Sea DSF un diccionario con llaves de {tipo1} y como
+	// valores de {tipo2}
+	
+	for i = a to n-1
+		DSF[C[i].codigo] = C[i].simbolo
+		
+	return DSF
+}
+
+// Codifica el arreglo Gap Coding GC de tamaño n de acuerdo
+// a los Diccionarios Shannon Fano para valores Comunes 
+// (pares) y Outliers (impares)
+generar_GCSF(GC, DSFC, DSFO, n) {
+ 	// Complejidad asintótica O(n)
+	// Se define el arreglo GCSF de 'tipo' ya que
+	// durante la experimentación el tipo de variable
+	// que se van a almacenar variarán, siendo la variación
+	// en el largo del tipo de dato (32, 16, 8, 4 ... bits)
+
+	Sea GCSF[0 .. n-1] un arreglo de largo n de {tipo}
+	
+	for i = 0 to n-1
+        if GC[i] % 2 == 0
+			GCSF[i] = Llave de DSFC para el valor GC[i]
+		else
+			GCSF[i] = Llave de DSFO para el valor GC[i]
+	
+	return GCSF
+}
+
+// A partir de los Diccionarios Shannon Fano para valores
+// Comunes (pares) y Outliers (impares) retorna la 
+// decodificación del código val
+decodificar_SF(DSFC, DSFO, val) {
+ 	// Complejidad asintótica O(c)
+	if (val % 2 == 0) return DSFC[val];
+	return DSFO[val]
+}
+
+
